@@ -1,0 +1,32 @@
+# RewriteEngine on
+# RewriteCond %{REQUEST_FILENAME} !(index\.php)$ 
+# RewriteCond %{REQUEST_FILENAME} ^.*(\.php)$ 
+# RewriteRule ^.*$ - [F,L] 
+# # RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteRule . index.php [L]
+# IndexIgnore *
+
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !(index\.php)$ 
+RewriteCond %{REQUEST_FILENAME} ^.*(\.php)$ 
+RewriteRule ^.*$ - [F,L] 
+
+
+RewriteCond %{HTTP_HOST} ^www\.socketlab\.php [NC]
+RewriteRule ^(.*)$ https://socketlab.php/%{REQUEST_URI} [L,R=301]
+
+RewriteCond %{HTTPS} !on
+RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule . index.php [L]
+IndexIgnore *
+
+
+
+
