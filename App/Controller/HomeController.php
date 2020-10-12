@@ -9,6 +9,6 @@ class HomeController extends BaseController
 {
     public static function index()
     {
-        die("Home Controller");
+        die("Home Controller !");
     }
 }
