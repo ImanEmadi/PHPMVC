@@ -2,7 +2,7 @@
 
 namespace App\Services\View;
 
-class view
+class View
 {
     public static function load($layout = null, $body, array $data = null, array $assets = null, $TITLE = SITE_NAME)
     {
@@ -17,31 +17,19 @@ class view
         $body = BODY_PATH . $body;
         self::pathIsValid($body);
         $links = array();
-        foreach (LINKS as $index => $scr) {
-            array_push($links, $scr);
-        }
-        foreach (SCRIPTS as $index => $scr) {
-            array_push($links, $scr);
-        }
-
         if ($assets !== null) {
             foreach ($assets as $asset) {
-                $folder_depth = substr_count($_SERVER['REQUEST_URI'], "/");
-                $folder_depth -= ROOT_DEFAULT_DEPTH; // newly added
-                if (!$folder_depth || $folder_depth < 0) { // second condition newly added
-                    $folder_depth = 0; // newly changed - last value : 1
+                if (is_array($asset)) {
+                    list($asset, $attr) = $asset;
+                } else {
+                    $attr = '';
                 }
-                $pathNavigation = '';
+
+                $pathNavigation = '/';
                 if (is_readable(CSS_PATH . $asset) && file_exists(CSS_PATH . $asset)) {
-                    for ($i = 0; $i < $folder_depth; $i++) {
-                        $pathNavigation .= '../';
-                    }
-                    array_push($links, '<link rel="stylesheet" href="' . $pathNavigation . CSS_PATH . $asset . '">');
+                    array_push($links, '<link ' . $attr . ' rel="stylesheet" href="' . $pathNavigation . CSS_PATH . $asset . '">');
                 } elseif (is_readable(JS_PATH . $asset) && file_exists(JS_PATH . $asset)) {
-                    for ($i = 0; $i < $folder_depth; $i++) {
-                        $pathNavigation .= '../';
-                    }
-                    array_push($links, '<script src="' . $pathNavigation . JS_PATH . $asset . '"></script>');
+                    array_push($links, '<script ' . $attr . ' src="' . $pathNavigation . JS_PATH . $asset . '"></script>');
                 } else {
                     $url = filter_var($asset, FILTER_SANITIZE_URL);
                     if (filter_var($url, FILTER_VALIDATE_URL)) {
@@ -60,9 +48,6 @@ class view
                 }
             }
         }
-
-
-
         if ($layout !== null) {
             ob_start();
             include $body;

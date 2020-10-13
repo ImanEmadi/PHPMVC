@@ -6,7 +6,6 @@ define("LANGUAGE", 'FA'); // site language
 // PATHs
 define("BASE_PATH", __DIR__ . "/../"); // DIRECTORY_SEPARATOR
 define("REAL_BASE_PATH", realpath(BASE_PATH)); // newly added
-define("ROOT_DEFAULT_DEPTH", 0); // specifies the project root depth ( number of / or \ in url while in root) , used in link-src-etc ... addressing - newly added
 define("CONTROLLER_PATH",  "\App\Controller\\");
 define("MIDDLEWARE_PATH",  "\App\Middleware\\");
 define("PATH_ERR_404", "Views/Errors/404.html");
@@ -26,7 +25,7 @@ define("MIDDLEWARE_REQUIRED", 1);
 define("PASS_OPTIONS_METHODS", 1); // send HTTP 200 status code and terminate document on OPTIONS request (used for preflight requests)
 
 // Strings 
-define("SERVER_KEY", "");
+define("SERVER_KEY", "6LdHpcAZAAAAAAgu29RM-M5vavlXRRJC_vjN-eql");
 define("TIMEZONE", "Asia/Tehran"); // this is used in index 
 
 // production phase 
