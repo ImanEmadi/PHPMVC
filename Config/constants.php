@@ -25,7 +25,7 @@ define("MIDDLEWARE_REQUIRED", 1);
 define("PASS_OPTIONS_METHODS", 1); // send HTTP 200 status code and terminate document on OPTIONS request (used for preflight requests)
 
 // Strings 
-define("SERVER_KEY", "6LdHpcAZAAAAAAgu29RM-M5vavlXRRJC_vjN-eql");
+define("SERVER_KEY", "");
 define("TIMEZONE", "Asia/Tehran"); // this is used in index 
 
 // production phase 
