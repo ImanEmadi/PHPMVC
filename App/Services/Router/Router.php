@@ -21,7 +21,7 @@ class Router
         // check if URL is valid
         if (!self::routeExists()) {
             header("HTTP/1.0 404");
-            // include BASE_PATH . PATH_ERR_404;
+            include BASE_PATH . PATH_ERR_404;
             die();
         }
         // check if access method is invalid
@@ -30,7 +30,7 @@ class Router
             header("HTTP/1.0 403");
             die("ERROR 403 BAD REQUEST !");
         }
-        // call middleWares 
+        // call middleWares
         GlobalMiddleWares::runGlobalMiddleWares();
         list($Allmiddlewares, $AllmiddlewaresMethod) = explode("@", self::getRouteMiddleware());
         if ($Allmiddlewares !== "null") {
@@ -65,12 +65,11 @@ class Router
     }
     public static function currentRoute()
     {
-        return $_SERVER['REQUEST_URI'] !== '/' ? rtrim(strtolower(strtok(urldecode($_SERVER['REQUEST_URI']), "?")), '\\/') : '/'; //  #BETA
+        return $_SERVER['REQUEST_URI'] !== '/' ? rtrim(strtolower(strtok(urldecode($_SERVER['REQUEST_URI']), "?")), '\\') : '/'; //  #BETA
     }
 
     public static function routeExists()
     {
-        // return array_key_exists(self::$currentRoute, self::$allRoutes); // origin
         if (array_key_exists(self::$currentRoute, self::$allRoutes)) {
             return true;
         } else { // check for parameterized  Routes
@@ -84,7 +83,7 @@ class Router
                     $routePattern = preg_replace("#\\\/#i", "\/?", $routePattern, 1); // add optional (?) to regex for slash at the beginning of regex to match URI
                     // die("#^" . $routePattern . "#i");
                     if (preg_match("#^" . $routePattern . "#i", self::$currentRoute)) { // if URI and regex match
-                        // turn both route and URI to arrays splitted by / 
+                        // turn both route and URI to arrays splitted by /
                         $explodedRoute = explode('/', $route);
                         $explodedCurrentRoute = explode('/', self::currentRoute());
                         foreach ($explodedRoute as $explodedRouteDirIndex => $explodedRouteDir) {

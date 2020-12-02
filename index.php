@@ -10,12 +10,12 @@ set_error_handler(
         $errorObj = (object) [];
         $errorObj->status = 0;
         $errorObj->response = "Internal server error";
-        // $errorObj->errorInfo = [
-        //     "errorNumber" => $errno,
-        //     "errorMessage" => $errStr,
-        //     "errorFile" => $errFile,
-        //     "errorLine" => $errLine,
-        // ];
+        $errorObj->errorInfo = [
+            "errorNumber" => $errno,
+            "errorMessage" => $errStr,
+            "errorFile" => $errFile,
+            "errorLine" => $errLine,
+        ];
         header("HTTP/1.0 500");
         die(json_encode($errorObj));
     },
@@ -23,10 +23,11 @@ set_error_handler(
 );
 // #BETA : exception handling according to async Ajax requests from front-end
 
-// http://localhost:3000    
+// http://localhost:3000
 
 $allowedOrigins = [
     'http://localhost:3000',
+    'http://localhost:8100',
 ];
 if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowedOrigins)) {
     $origin = $_SERVER['HTTP_ORIGIN'];
