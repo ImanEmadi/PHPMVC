@@ -32,10 +32,10 @@ class Router
         }
         // call middleWares
         GlobalMiddleWares::runGlobalMiddleWares();
-        list($Allmiddlewares, $AllmiddlewaresMethod) = explode("@", self::getRouteMiddleware());
-        if ($Allmiddlewares !== "null") {
-            $middlewares = explode(".", $Allmiddlewares);
-            $middlewaresMethod = explode(".", $AllmiddlewaresMethod);
+        list($allMiddleWares, $allMiddleWaresMethod) = explode("@", self::getRouteMiddleware());
+        if ($allMiddleWares !== "null") {
+            $middlewares = explode(".", $allMiddleWares);
+            $middlewaresMethod = explode(".", $allMiddleWaresMethod);
 
             foreach ($middlewares as $index => $middleware) {
                 $middlewarePath = MIDDLEWARE_PATH . $middleware;
