@@ -1,2 +1,1 @@
-# PHPMVC
-This is my personal PHP MVC project files , developed based on my needs .
+PHP MVC written by me for personal use

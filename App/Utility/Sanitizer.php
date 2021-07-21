@@ -40,4 +40,14 @@ class Sanitizer
 
         return $string;
     }
+
+    public static function sanitizeEmail($email)
+    {
+        return filter_var($email, FILTER_SANITIZE_EMAIL);
+    }
+
+    public static function clean_input($input)
+    {
+        return htmlspecialchars(stripslashes(trim($input)));
+    }
 }

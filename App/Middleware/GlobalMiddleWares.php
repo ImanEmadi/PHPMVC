@@ -2,7 +2,7 @@
 
 namespace App\Middleware;
 
-class GlobalMiddleWares
+class GlobalMiddleWares extends BaseMiddleware
 {
 
 
