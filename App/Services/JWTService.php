@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Firebase\JWT\JWT;
 
+// * Requires the installation of firebase/php-jwt
 class JWTService
 {
     /**
