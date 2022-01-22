@@ -3,169 +3,129 @@
 namespace App\DataBase\MySQL\Model;
 
 use App\Services\HTTPService;
+
 use DateTime;
 
 class BaseModel
 {
-    // methods in Models that extend this BaseModel , and start with _ , mean they are for non-user use 
-    // such as loading data for admin or in-code usage
     private $databaseConfig;
-    protected static $DBConnection;
-    protected $table;
-    public function __construct($table = '')
+    protected static  $DBConnection;
+    protected string $query;
+    protected $model;
+    public bool $terminateOnError = true;
+    protected \mysqli_stmt $statement;
+    public function __construct(protected string $table)
     {
         $this->databaseConfig = require "Config/database.php";
         self::$DBConnection = new \mysqli($this->databaseConfig["ip"], $this->databaseConfig["username"], $this->databaseConfig["password"], $this->databaseConfig["database"]);
         self::$DBConnection->set_charset("utf8");
-        $this->table = $table;
     }
 
-    protected function getAll($order = null)
+    protected function select(string $selection): self
     {
-        $result = self::$DBConnection->query("SELECT * FROM " . $this->table . $order);
-        $this->checkConnection();
-        return $this->returnResult($result);
-    }
-
-    /**
-     * @param string $row
-     * @param string $condition
-     */
-    protected function count($row, $condition = "", $bindings = [])
-    {
-        $qu = "SELECT COUNT($row) FROM " . $this->table . $condition;
-        if ($stmt = self::$DBConnection->prepare($qu)) {
-            try {
-                if (!empty($bindings))
-                    $stmt->bind_param(...$bindings);
-                $stmt->execute();
-                return $this->returnResult($stmt->get_result());
-            } catch (\Throwable $th) {
-                $this->checkConnection();
-            }
-        } else {
-            $this->checkConnection();
-        }
-        // $result = self::$DBConnection->query("SELECT COUNT($row) FROM " . $this->table . $condition);
-        // $this->checkConnection();;
-        // return $this->returnResult($result);
-    }
-
-    protected function countAll()
-    {
-        $result = self::$DBConnection->query("SELECT COUNT(*) FROM " . $this->table);
-        $this->checkConnection();
-        //return $result;
-        return $this->returnResult($result);
-    }
-
-    protected function select($required = "*", $condition = '', $bindings = [])
-    {
-        $qu = "SELECT $required FROM $this->table $condition";
-        // die($qu);
-        if ($stmt = self::$DBConnection->prepare($qu)) {
-            try {
-                if ($condition !== '' && !empty($bindings))
-                    $stmt->bind_param(...$bindings);
-                $stmt->execute();
-                return $this->returnResult($stmt->get_result());
-            } catch (\Exception $e) {
-                $this->checkConnection();
-            }
-        } else {
-            $this->checkConnection();
-        }
+        $this->query = " SELECT $selection FROM $this->table ";
+        return $this;
     }
 
     /**
-     * @param string $columns  columns to insert data in
-     * @param array $valuesArr   an array of arrays , each child array indicates a row of data to be inserted
-     * @param array $types   inserted data binding types 
+     * @param string|array $columns - string of columns names without parentheses or an array of columns names
      */
-    protected function insert($columns,  $valuesArr, $types = null)
+    protected function insert(array|string $columns): self
     {
-        $qu = "INSERT INTO $this->table $columns VALUES (";
-        $rowsCount = sizeof($valuesArr[0]);
-        if ($types === null) { // if user has not defined values type for binding , set all as string
-            $typesStr = '';
-            for ($i = 1; $i <= $rowsCount; $i++) {
-                $typesStr .= 's';
-            }
-        } else {
-            $typesStr = $types;
-        }
+        $columnsStr = is_string($columns) ? $columns : implode(',', $columns);
+        $valuesCount = substr_count($columnsStr, ",");
+        $quMarks = "";
+        for ($i = 0; $i <= $valuesCount; $i++) $quMarks .= "?,";
+        $quMarks = trim($quMarks, ",");
+        $this->query = " INSERT INTO $this->table ($columnsStr) VALUES ($quMarks) ";
+        return $this;
+    }
 
-        for ($i = 1; $i <= $rowsCount; $i++) {
-            $qu .= "?,";
-        }
-        $qu = rtrim($qu, ',') . "); ";
-        // die($qu);
-        $stmt = self::$DBConnection->prepare($qu);
-        if ($stmt === false)
-            return $this->checkConnection();
+    protected function where(string $condition): self
+    {
+        $this->query .= " WHERE " . $condition;
+        return $this;
+    }
 
+    protected function and(string $condition): self
+    {
+        $this->query .= " AND " . $condition;
+        return $this;
+    }
+
+    protected function or(string $condition): self
+    {
+        $this->query .= " OR " . $condition;
+        return $this;
+    }
+
+    protected function limit(int $limit, int $offset = 0): self
+    {
+        $this->query = " LIMIT $offset,$limit ";
+        return $this;
+    }
+
+    protected function orderBy(string $order, string $sortOrder = "DESC"): self
+    {
+        $this->query .= " ORDER BY $order $sortOrder ";
+        return $this;
+    }
+
+    /**
+     * @param string $types - type of bound values
+     * @param array $params - an array of arrays , which inside arrays are values to be executed in prepared statement
+     */
+    protected function execute(string $types = "", array $params = []): self
+    {
         try {
-            foreach ($valuesArr as  $rowArr) {
-                $stmt->bind_param($typesStr, ...$rowArr);
-                $stmt->execute();
-                if (!$this->checkConnection(false))
-                    return false;
-            }
-        } catch (\Error $e) {
-            // throw new Error($e);
+            if ($statement = self::$DBConnection->prepare($this->query)) {
+                if (count($params) > 0) {
+                    foreach ($params as $paramArray) {
+                        if (!$statement->bind_param($types, ...$paramArray)) throw new \Error();
+                        if (!$statement->execute()) throw new \Error(); //* execute for each set of values
+                    }
+                } else if (!$statement->execute()) throw new \Error(); //* if there are no parameters
+                $this->statement = $statement;
+            } else throw new \Error();
+            return $this;
+        } catch (\Throwable $th) {
             return $this->checkConnection();
         }
-        return true;
     }
 
-    protected function delete($condition = '', $binding = null)
+    protected function get_result(): \mysqli_result|false
     {
-        $qu = "DELETE FROM $this->table $condition";
-        if ($stmt = self::$DBConnection->prepare($qu)) {
-            try {
-                if ($binding !== null)
-                    $stmt->bind_param(...$binding);
-
-                return $stmt->execute();
-            } catch (\Exception $th) {
-                return $this->checkConnection();
-            }
-        } else
-            return $this->checkConnection();
+        if ($this->statement) return $this->statement->get_result();
+        else return false;
     }
 
-    protected function update(array $columns, $condition = '', array $binding)
+    protected function fetch_all(int $mode = MYSQLI_ASSOC): array|bool
     {
-        $qu = "UPDATE $this->table SET ";
-        foreach ($columns as $column) {
-            $qu .= " $column = ? , ";
-        }
-        $qu = rtrim($qu, ', ');
-        $qu .= $condition;
-        if ($stmt = self::$DBConnection->prepare($qu)) {
-            try {
-                $stmt->bind_param(...$binding);
-                return $stmt->execute();
-            } catch (\Exception $e) {
-                return $this->checkConnection();
-            }
-        } else
-            return $this->checkConnection();
+        $results = $this->get_result();
+        if ($results === false) return $this->checkConnection();
+        return $results->fetch_all($mode);
     }
 
-    protected function packPreparedResults($results)
+    //* since query is being replace when query-initializing methods (such as select,insert & ...) are used .
+    //? this method is probably useless
+    protected function clearQuery(): self
     {
-        while ($data = $results->fetch_assoc()) {
-            $resultArray[] = $data;
-            return $this->checkConnection();
-        }
-        return $resultArray;
+        $this->query = "";
+        return $this;
     }
 
-    protected function checkConnection($terminateOnError = true)
+    protected function returnStatement(): \mysqli_stmt
+    {
+        return $this->statement;
+    }
+
+    /**
+     * if `Model.terminateOnError` is true , will end the script with a HTTP Response. (code:503)
+     */
+    protected function checkConnection()
     {
         if (self::$DBConnection->errno) {
-            if ($terminateOnError)
+            if ($this->terminateOnError)
                 HTTPService::respond(ENVIRONMENT === 'DEVELOPMENT' ? self::$DBConnection->error : DB_ERROR, 503);
             else
                 return false;

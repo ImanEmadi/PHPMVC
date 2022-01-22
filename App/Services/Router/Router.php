@@ -77,6 +77,7 @@ class Router
         // call controller
         list($controller, $controllerMethod) = explode("@", self::getRouteController());
         $controllerPath = CONTROLLER_PATH . $controller;
+
         if (class_exists($controllerPath)) {
             $controllerInstance = new $controllerPath;
             $controllerInstance::$controllerMethod();

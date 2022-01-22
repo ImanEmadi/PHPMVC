@@ -11,8 +11,8 @@ ini_set('post_max_size', '10M');
 ini_set('register_globals', "0");
 
 #  ENVIRONMENT = PRODUCTION | DEVELOPMENT
-define("ENVIRONMENT", "PRODUCTION");
 // define("ENVIRONMENT", "PRODUCTION");
+define("ENVIRONMENT", "DEVELOPMENT");
 
 set_error_handler(
     function ($errno, $errStr, $errFile, $errLine, $errContext) {
@@ -32,7 +32,7 @@ set_error_handler(
     },
     ENVIRONMENT === 'DEVELOPMENT' ? E_ALL | E_STRICT : E_ERROR | E_COMPILE_ERROR
 );
-// http://localhost:3000
+
 
 $allowedOrigins = [
     'http://localhost:3000',
@@ -49,6 +49,7 @@ header("Access-Control-Allow-methods: POST,OPTIONS,GET"); // OPTIONS is used for
 header('Access-Control-Allow-Credentials: true');
 if (PHP_VERSION_ID < 70400) // ^7.4
     throw new Error("API unavailable - cfg.php.ver");
+// die(phpinfo());
 require_once "Config/constants.php";
 require_once "Config/messages.php";
 require_once "Bootstrap/AutoLoad.php";

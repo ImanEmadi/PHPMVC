@@ -2,6 +2,6 @@
 
 namespace App\DataBase\MySQL\Repository;
 
-class BaseRepository
+abstract class BaseRepository
 {
 }

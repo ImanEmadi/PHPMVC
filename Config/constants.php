@@ -29,14 +29,14 @@ define("PASS_OPTIONS_METHODS", 1); // send HTTP 200 status code and terminate do
 define("SERVER_KEY", "");
 define("SECRET_KEY", "");
 define("TIMEZONE", "Asia/Tehran"); // this is used in index 
-define("DATA_SLICE_SIZE", 5);
+define("DATA_SLICE_SIZE", 10);
 
 // production phase 
-define("SITE_URL", "");
-define("SITE_NAME", "");
-define("DOMAIN", "");
-
-// development phase
-// define("DOMAIN", "");
 // define("SITE_URL", "");
 // define("SITE_NAME", "");
+// define("DOMAIN", "");
+
+// development phase
+define("DOMAIN", "php.mvc");
+define("SITE_URL", "php.mvc");
+define("SITE_NAME", "PHP MVC");
