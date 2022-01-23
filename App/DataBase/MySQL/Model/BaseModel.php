@@ -9,11 +9,11 @@ use DateTime;
 class BaseModel
 {
     private $databaseConfig;
-    protected static  $DBConnection;
-    protected string $query;
-    protected $model;
+    private static  $DBConnection;
+    private string $query;
     public bool $terminateOnError = true;
     protected \mysqli_stmt $statement;
+
     public function __construct(protected string $table)
     {
         $this->databaseConfig = require "Config/database.php";
@@ -41,6 +41,23 @@ class BaseModel
         return $this;
     }
 
+    protected function delete(): self
+    {
+        $this->query = " DELETE FROM $this->table ";
+        return $this;
+    }
+
+    /**
+     * @param array $columns 
+     */
+    protected function update(array $columns): self
+    {
+        $upQu = "";
+        foreach ($columns as $column) $upQu .= " $column = ?,";
+        $this->query = " UPDATE $this->table SET " . trim($upQu, ',') . " ";
+        return $this;
+    }
+
     protected function where(string $condition): self
     {
         $this->query .= " WHERE " . $condition;
@@ -61,7 +78,7 @@ class BaseModel
 
     protected function limit(int $limit, int $offset = 0): self
     {
-        $this->query = " LIMIT $offset,$limit ";
+        $this->query .= " LIMIT $offset,$limit ";
         return $this;
     }
 
@@ -80,8 +97,8 @@ class BaseModel
         try {
             if ($statement = self::$DBConnection->prepare($this->query)) {
                 if (count($params) > 0) {
-                    foreach ($params as $paramArray) {
-                        if (!$statement->bind_param($types, ...$paramArray)) throw new \Error();
+                    foreach ($params as $paramsArray) {
+                        if (!$statement->bind_param($types, ...$paramsArray)) throw new \Error();
                         if (!$statement->execute()) throw new \Error(); //* execute for each set of values
                     }
                 } else if (!$statement->execute()) throw new \Error(); //* if there are no parameters
@@ -104,14 +121,6 @@ class BaseModel
         $results = $this->get_result();
         if ($results === false) return $this->checkConnection();
         return $results->fetch_all($mode);
-    }
-
-    //* since query is being replace when query-initializing methods (such as select,insert & ...) are used .
-    //? this method is probably useless
-    protected function clearQuery(): self
-    {
-        $this->query = "";
-        return $this;
     }
 
     protected function returnStatement(): \mysqli_stmt
@@ -137,10 +146,5 @@ class BaseModel
     {
         $date = new DateTime();
         return $date->getTimestamp();
-    }
-
-    protected function returnResult($result)
-    {
-        return $result->fetch_all(MYSQLI_ASSOC);
     }
 }

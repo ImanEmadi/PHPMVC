@@ -24,4 +24,16 @@ class MockRepository extends BaseRepository
     {
         return self::$model->insertMockData($users);
     }
+
+    public static function deleteByIDs(array $idArray)
+    {
+        return self::$model->deleteMockDataById(implode(",", $idArray));
+    }
+
+    public static function setPerfectNumberById(array $ids)
+    {
+        return self::$model->updateUsersNumberrangeById($ids, array_map(function () {
+            return 100;
+        }, $ids));
+    }
 }
